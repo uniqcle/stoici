@@ -9,8 +9,8 @@ const subscribeKeyBoard = () => {
 
 const subscriptionKeyBoard = () => {
   return new InlineKeyboard()
-    .text("на 1 месяц - 499 руб.", "pretium_i")
-    .text("на 3 месяца - 799 руб.", "pretium_ii")
+    .text(`на 1 месяц - ${process.env.PRETIUM_I} руб.`, "pretium_i")
+    .text(`на 3 месяца - ${process.env.PRETIUM_II} руб.`, "pretium_ii")
     .row()
     .text("▲ В начало", "start");
 };

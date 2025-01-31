@@ -2,6 +2,11 @@ const { Router } = require('express');
 const { callbackPaymentWebhook } = require("./Prodamus");
 const router = Router();
 
+
+
+// payment
+router.post("/api/prodamus", callbackPaymentWebhook); 
+
 router.get("/", (req, res) => {
   //console.log(req)
   console.log("Запрос с главной!");
@@ -10,8 +15,5 @@ router.get("/", (req, res) => {
     title: "Main Stoicismus page...",
   });
 });
-
-// payment
-router.post("/api/prodamus", callbackPaymentWebhook); 
 
 module.exports =  router; 

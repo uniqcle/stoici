@@ -6,10 +6,10 @@ const customData = {
   postUrl: `${process.env.PAYMENT_URL}`,
   descriptionPretium: `${process.env.PAYMENT_DESCRIPTION}`,
   pretium_i: {
-    pricePretium: 499,
+    pricePretium: `${process.env.PRETIUM_I}`,
   },
   pretium_ii: {
-    pricePretium: 799,
+    pricePretium: `${process.env.PRETIUM_II}`,
   },
 };
 
@@ -18,14 +18,19 @@ const customData = {
 /*******************************************************/
 const sendPayment = async (pretium, ctx) => {
   const chat_id = ctx.update.callback_query.message.chat.id;
+  const orderId = "S" + chat_id;
+
+  let additional_data = pretium == "pretium_i" ? " на 1 месяц" : " на 3 месяца";
 
   // формируем объект инвойса
   const params = {
-    order_id: "Номер заказа Стоицизмуса",
-    customer_extra: "Доступ к платному контенту",
+    order_id: orderId,
+    customer_extra: "Доступ к платному контенту" + additional_data,
     do: "link",
+    sys: `${process.env.PAYMENT_SYS_KEY}`,
     _param_chat_id: chat_id,
     _param_pretium: pretium,
+    _param_orderid: orderId,
     demo_mode: 1,
     callbackType: "json",
   };
