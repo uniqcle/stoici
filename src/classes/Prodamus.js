@@ -31,7 +31,7 @@ const sendPayment = async (pretium, ctx) => {
     _param_chat_id: chat_id,
     _param_pretium: pretium,
     _param_orderid: orderId,
-    demo_mode: 1,
+    //demo_mode: 1,
     callbackType: "json",
   };
 
@@ -47,11 +47,16 @@ const sendPayment = async (pretium, ctx) => {
       url.href +
       `&products[0][price]=${customData[pretium].pricePretium}&products[0][quantity]=1&products[0][name]=${customData.descriptionPretium}`;
 
-    const response = await fetch(currentLink);
+    const response = await fetch(currentLink, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
     const data = await response.text();
 
-    // console.log(currentLink);
-    // console.log("Текущая ссылка: ", data);
+    console.log(currentLink);
+    console.log("Текущая ссылка: ", data);
 
     return data;
   } catch (e) {
@@ -63,56 +68,82 @@ const sendPayment = async (pretium, ctx) => {
 // Отправка данных от Prodamus
 /*******************************************************/
 const callbackPaymentWebhook = async (req, res) => {
-  const data = req.body; // Данные уже распарсены
+  try {
+    console.log("Заголовки запроса: ", req.headers);
+    const headers = req.headers;
+    const data = req.body; // Данные уже распарсены
 
-  if (Object.keys(data).length !== 0) {
-    // обновляем запись в БД
-    // если запись в БД произошла успешно, отправляем статус 200
+    const secret_key = `${process.env.PAYMENT_SECRET_KEY}`;
+    console.log("Headers: ", headers);
     console.log("Received data:", data);
 
-    //data.paid_date
+    if (Object.keys(data).length == 0) {
+      throw new Error("POST is empty");
+    }
 
-    const currentDate = new Date(); // Текущая дата
-    const nextMonthDate = addMonth(currentDate);
+    if (!headers?.sign) {
+      throw new Error("signature not found");
+    }
 
-    console.log("Текущая дата:", currentDate);
-    console.log("Дата через месяц:", nextMonthDate.toLocaleDateString());
+    if (!Hmac.verify(req.body, secret_key, headers.sign)) {
+      throw new Error("signature incorrect");
+    }
 
-    await updateUserPayment(data.user_id, data);
-
-    await fetch(
-      `https://api.telegram.org/bot${process.env.BOT_API_KEY}/sendMessage`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          chat_id: data.chat_id,
-          text: "Поздравляем! Оплата прошла успешно. Можете начинать путешествие в античный мир!",
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: "Начать",
-                  callback_data: "start", // Данные для обработки
-                },
-              ],
-            ],
-          },
-          resize_keyboard: true,
-        }),
-      }
-    )
-      .then((response) => response.json())
-      .then(async (data) => {
-        await res.sendStatus(200);
-        //console.log("Ответ Telegram:", data);
-      })
-      .catch((error) => console.error("Ошибка:", error));
-  } else {
+    await res.sendStatus(200);
+    console.log("Успешно!");
+  } catch (e) {
+    console.log(e);
     await res.sendStatus(400);
   }
+
+  // if (Object.keys(data).length !== 0) {
+  //   // обновляем запись в БД
+  //   // если запись в БД произошла успешно, отправляем статус 200
+
+  //   //data.paid_date
+
+  //   const currentDate = new Date(); // Текущая дата
+  //   const nextMonthDate = addMonth(currentDate);
+
+  //   console.log("Текущая дата:", currentDate);
+  //   console.log("Дата через месяц:", nextMonthDate.toLocaleDateString());
+
+  //   await updateUserPayment(data.user_id, data);
+
+  //   await fetch(
+  //     `https://api.telegram.org/bot${process.env.BOT_API_KEY}/sendMessage`,
+  //     {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         chat_id: data.chat_id,
+  //         text: "Поздравляем! Оплата прошла успешно. Можете начинать путешествие в античный мир!",
+  //         reply_markup: {
+  //           inline_keyboard: [
+  //             [
+  //               {
+  //                 text: "Начать",
+  //                 callback_data: "start", // Данные для обработки
+  //               },
+  //             ],
+  //           ],
+  //         },
+  //         resize_keyboard: true,
+  //       }),
+  //     }
+  //   )
+  //     .then((response) => response.json())
+  //     .then(async (data) => {
+  //       await res.sendStatus(200);
+  //       //console.log("Ответ Telegram:", data);
+  //     })
+  //     .catch((error) => console.error("Ошибка:", error));
+
+  // } else {
+  //   await res.sendStatus(400);
+  // }
 };
 
 module.exports = {
