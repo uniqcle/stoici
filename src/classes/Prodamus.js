@@ -70,7 +70,7 @@ const sendPayment = async (pretium, ctx) => {
 const callbackPaymentWebhook = async (req, res) => {
   try {
     const headers = req.headers;
-    const data = req.body; // Данные уже распарсены
+    const body = req.body; // Данные уже распарсены
 
     // const data = {
     //   date: "2025-02-04T00:00:00+03:00",
@@ -110,7 +110,7 @@ const callbackPaymentWebhook = async (req, res) => {
       });
     }
 
-    objectToArray(data);
+    objectToArray(body);
 
     // console.log("Массив с php: ");
     // console.log(body);
@@ -119,7 +119,7 @@ const callbackPaymentWebhook = async (req, res) => {
     // console.log("Headers: ", headers);
     // console.log("Received data:", data);
 
-    if (Object.keys(data).length == 0) {
+    if (Object.keys(body).length == 0) {
       throw new Error("POST is empty");
     }
 
@@ -127,14 +127,12 @@ const callbackPaymentWebhook = async (req, res) => {
       throw new Error("signature not found");
     }
 
-    req.body = newBody;
-
     console.log("Заголовки запроса: ", headers);
-    console.log("Знак Sign: ", headers.sign);
-    console.log("Полный запрос request: ", req);
-    
+    console.log("Знак Sign: ", headers);
+    console.log("Тело запроса body: ", body);
+    //console.log("Полный запрос request: ", req);
 
-    if (!Hmac.verify(req, secret_key, headers.sign)) {
+    if (!Hmac.verify(req, secret_key, headers)) {
       throw new Error("signature incorrect");
     }
 
