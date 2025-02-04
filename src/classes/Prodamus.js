@@ -71,6 +71,7 @@ const callbackPaymentWebhook = async (req, res) => {
   try {
     const headers = req.headers;
     const body = req.body; // Данные уже распарсены
+    const sign = String(req.headers.sign);
 
     // const data = {
     //   date: "2025-02-04T00:00:00+03:00",
@@ -128,11 +129,11 @@ const callbackPaymentWebhook = async (req, res) => {
     }
 
     console.log("Заголовки запроса: ", headers);
-    console.log("Знак Sign: ", headers.sign);
+    console.log("Знак Sign: ", sign);
     console.log("Тело запроса body: ", body);
     //console.log("Полный запрос request: ", req);
 
-    if (!Hmac.verify(req, secret_key, headers.sign)) {
+    if (!Hmac.verify(req, secret_key, sign)) {
       throw new Error("signature incorrect");
     }
 
