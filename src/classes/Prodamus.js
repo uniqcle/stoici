@@ -127,7 +127,7 @@ const callbackPaymentWebhook = async (req, res) => {
       throw new Error("signature not found");
     }
 
-    req.body = body;
+    req.body = newBody;
 
     console.log("Заголовки запроса: ", headers);
     console.log("Знак Sign: ", headers.sign);
