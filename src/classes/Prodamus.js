@@ -98,19 +98,19 @@ const callbackPaymentWebhook = async (req, res) => {
     //   payment_status_description: "Успешная оплата",
     // };
 
-    // let body = [];
+    let newBody = [];
 
-    // function objectToArray(obj) {
-    //   return Object.entries(obj).map(([key, value]) => {
-    //     if (typeof value === "array" && value !== null) {
-    //       return (body[key] = objectToArray(value));
-    //     } else {
-    //       return (body[key] = value);
-    //     }
-    //   });
-    // }
+    function objectToArray(obj) {
+      return Object.entries(obj).map(([key, value]) => {
+        if (typeof value === "array" && value !== null) {
+          return (newBody[key] = objectToArray(value));
+        } else {
+          return (newBody[key] = value);
+        }
+      });
+    }
 
-    // objectToArray(data);
+    objectToArray(data);
 
     // console.log("Массив с php: ");
     // console.log(body);
@@ -127,9 +127,12 @@ const callbackPaymentWebhook = async (req, res) => {
       throw new Error("signature not found");
     }
 
+    req.body = body;
+
     console.log("Заголовки запроса: ", headers);
     console.log("Знак Sign: ", headers.sign);
     console.log("Полный запрос request: ", req);
+    
 
     if (!Hmac.verify(req, secret_key, headers.sign)) {
       throw new Error("signature incorrect");
