@@ -27,7 +27,7 @@ const Hmac = {
         if (typeof data[item] === "object") {
           data[item] = Hmac._strValAndSort(data[item]);
         } else {
-          console.log("Вываливается ошибка: ", data);
+          console.log("Вываливается ошибка: ", data[item]);
           data[item] = data[item].toString();
         }
       }
