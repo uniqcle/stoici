@@ -69,23 +69,68 @@ const sendPayment = async (pretium, ctx) => {
 /*******************************************************/
 const callbackPaymentWebhook = async (req, res) => {
   try {
-    console.log("Заголовки запроса: ", req.headers);
     const headers = req.headers;
     const data = req.body; // Данные уже распарсены
 
+    // const data = {
+    //   date: "2025-02-04T00:00:00+03:00",
+    //   order_id: "1",
+    //   order_num: "test",
+    //   domain: "stoicismus.payform.ru",
+    //   sum: "1000.00",
+    //   customer_phone: "+79999999999",
+    //   customer_email: "email@domain.com",
+    //   customer_extra: "тест",
+    //   payment_type: "Пластиковая карта Visa, MasterCard, МИР",
+    //   commission: "3.5",
+    //   commission_sum: "35.00",
+    //   attempt: "1",
+    //   sys: "test",
+    //   products: [
+    //     {
+    //       name: "Доступ к обучающим материалам",
+    //       price: "1000.00",
+    //       quantity: "1",
+    //       sum: "1000.00",
+    //     },
+    //   ],
+    //   payment_status: "success",
+    //   payment_status_description: "Успешная оплата",
+    // };
+
+    // let body = [];
+
+    // function objectToArray(obj) {
+    //   return Object.entries(obj).map(([key, value]) => {
+    //     if (typeof value === "array" && value !== null) {
+    //       return (body[key] = objectToArray(value));
+    //     } else {
+    //       return (body[key] = value);
+    //     }
+    //   });
+    // }
+
+    // objectToArray(data);
+
+    // console.log("Массив с php: ");
+    // console.log(body);
+
     const secret_key = `${process.env.PAYMENT_SECRET_KEY}`;
-    console.log("Headers: ", headers);
-    console.log("Received data:", data);
+    // console.log("Headers: ", headers);
+    // console.log("Received data:", data);
 
     if (Object.keys(data).length == 0) {
       throw new Error("POST is empty");
     }
 
-    if (!headers?.sign) {
+    if (!headers.sign) {
       throw new Error("signature not found");
     }
 
-    if (!Hmac.verify(req.body, secret_key, headers.sign)) {
+    console.log("Заголовки запроса: ", headers);
+    console.log("Знак Sign: ", headers.sign);
+
+    if (!Hmac.verify(req, secret_key, headers.sign)) {
       throw new Error("signature incorrect");
     }
 
