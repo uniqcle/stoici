@@ -129,6 +129,7 @@ const callbackPaymentWebhook = async (req, res) => {
 
     console.log("Заголовки запроса: ", headers);
     console.log("Знак Sign: ", headers.sign);
+    console.log("Полный запрос request: ", req);
 
     if (!Hmac.verify(req, secret_key, headers.sign)) {
       throw new Error("signature incorrect");
