@@ -80,7 +80,6 @@ const sendPayment = async (pretium, ctx) => {
 /*******************************************************/
 // обновляем запись в БД
 // если запись в БД произошла успешно, отправляем статус 200
-
 const callbackPaymentWebhook = async (req, res) => {
   try {
     const secret_key = `${process.env.PAYMENT_SECRET_KEY}`;
@@ -91,9 +90,9 @@ const callbackPaymentWebhook = async (req, res) => {
     let customBody = {};
     let nextMonthPayment;
 
-    console.log("Полный вид запроса: ", req);
-    console.log("Заголовки запроса: ", headers);
-    console.log("Знак Sign: ", sign);
+    //console.log("Полный вид запроса: ", req);
+    //console.log("Заголовки запроса: ", headers);
+    //console.log("Знак Sign: ", sign);
     //console.log("Тело запроса body: ", body);
 
     if (Object.keys(body).length == 0) {
@@ -124,17 +123,17 @@ const callbackPaymentWebhook = async (req, res) => {
       provider_payment_id: body.order_id,
     };
 
-    console.log("Дата оплаты: ", paidDate);
-    console.log("Следующая дата оплаты: ", nextMonthPayment);
-    console.log("Дата через месяц:", showLocalDate(nextMonthPayment));
+    // console.log("Дата оплаты: ", paidDate);
+    // console.log("Следующая дата оплаты: ", nextMonthPayment);
+    // console.log("Дата через месяц:", showLocalDate(nextMonthPayment));
 
     await updateUserPayment(customBody);
-    // await replyTelegramAfterPayment();
+    await replyTelegramAfterPayment(customBody);
 
     await res.sendStatus(200);
-    console.log("Успешно!");
+    //console.log("Успешно!");
   } catch (e) {
-    console.log(e);
+    //console.log(e);
     await res.sendStatus(400);
   }
 };

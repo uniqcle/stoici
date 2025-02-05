@@ -110,52 +110,47 @@ const replyEditMessage = async (ctx, command, keyboard) => {
         parse_mode: "HTML",
       }
     );
-
- 
   } catch (e) {
     console.log(e);
   }
 };
 
 // ответ клиенту после успешной оплаты
-const replyTelegramAfterPayment = async () => {
-
-      await fetch(
-        `https://api.telegram.org/bot${process.env.BOT_API_KEY}/sendMessage`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            chat_id: data.chat_id,
-            text: "Поздравляем! Оплата прошла успешно. Можете начинать путешествие в античный мир!",
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "Начать",
-                    callback_data: "start",
-                  },
-                ],
+const replyTelegramAfterPayment = async (customBody) => {
+  try {
+    await fetch(
+      `https://api.telegram.org/bot${process.env.BOT_API_KEY}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: customBody.param_chat_id,
+          text: "Поздравляем! Оплата прошла успешно. Можете начинать путешествие в античный мир!",
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "Начать",
+                  callback_data: "start",
+                },
               ],
-            },
-            resize_keyboard: true,
-          }),
-        }
-      )
-        .then((response) => response.json())
-        .then(async (data) => {
-          await res.sendStatus(200);
-          //console.log("Ответ Telegram:", data);
-        })
-        .catch((error) => console.error("Ошибка:", error));
-}
+            ],
+          },
+          resize_keyboard: true,
+        }),
+      }
+    );
+  } catch (e) {
+    console.error("Ошибка:", error);
+  }
+};
 
 module.exports = {
   replyWithPhoto,
   replyWithPhotoMaximes,
-replyTelegramAfterPayment,
+  replyTelegramAfterPayment,
   replyWithText,
   replyEditMessage,
   replyText,
