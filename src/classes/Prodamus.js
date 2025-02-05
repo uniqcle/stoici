@@ -1,6 +1,11 @@
 const Hmac = require("../classes/Hmac");
 const { updateUserPayment } = require("../classes/User");
-const { generateOrderNumber } = require("../helpers/date");
+const {
+  addMonth,
+  generateOrderNumber,
+  showLocalDate,
+} = require("../helpers/date");
+const { replyTelegramAfterPayment } = require("../classes/Reply");
 
 const customData = {
   postUrl: `${process.env.PAYMENT_URL}`,
@@ -17,23 +22,26 @@ const customData = {
 // Отправка данных к Prodamus для получения ссылки на оплату
 /*******************************************************/
 const sendPayment = async (pretium, ctx) => {
+  const user_id = ctx.user.dataValues.user_id;
   const chat_id = ctx.update.callback_query.message.chat.id;
-  const orderId = generateOrderNumber();
+  const order_num = generateOrderNumber();
 
-  console.log("Номер заказа: ", orderId);
+  console.log(ctx.user.dataValues.user_id);
+  console.log("Номер заказа: ", order_num);
 
   let additional_customer_extra =
     pretium == "pretium_i" ? " на 1 месяц" : " на 3 месяца";
 
   // формируем объект инвойса
   const params = {
-    order_id: orderId,
+    order_id: order_num,
     customer_extra: "Доступ к платному контенту" + additional_customer_extra,
     do: "link",
     sys: `${process.env.PAYMENT_SYS_KEY}`,
     _param_chat_id: chat_id,
     _param_pretium: pretium,
-    _param_orderid: orderId,
+    _param_order_num: order_num,
+    _param_user_id: user_id,
     //demo_mode: 1,
     callbackType: "json",
   };
@@ -63,79 +71,65 @@ const sendPayment = async (pretium, ctx) => {
 
     return data;
   } catch (e) {
-    console.error("There was a problem with the fetch operation:", e); // Обрабатываем ошибки
+    console.error("There was a problem with the fetch operation:", e);
   }
 };
 
 /*******************************************************/
 // Отправка данных от Prodamus
 /*******************************************************/
+// обновляем запись в БД
+// если запись в БД произошла успешно, отправляем статус 200
+
 const callbackPaymentWebhook = async (req, res) => {
   try {
+    const secret_key = `${process.env.PAYMENT_SECRET_KEY}`;
     const headers = req.headers;
-    const body = req.body; // Данные уже распарсены
+    const body = req.body;
     const sign = String(req.headers.sign);
+    const paidDate = body.date;
+    let customBody = {};
+    let nextMonthPayment;
 
     console.log("Полный вид запроса: ", req);
-
-    // const data = {
-    //   date: "2025-02-04T00:00:00+03:00",
-    //   order_id: "1",
-    //   order_num: "test",
-    //   domain: "stoicismus.payform.ru",
-    //   sum: "1000.00",
-    //   customer_phone: "+79999999999",
-    //   customer_email: "email@domain.com",
-    //   customer_extra: "тест",
-    //   payment_type: "Пластиковая карта Visa, MasterCard, МИР",
-    //   commission: "3.5",
-    //   commission_sum: "35.00",
-    //   attempt: "1",
-    //   sys: "test",
-    //   products: [
-    //     {
-    //       name: "Доступ к обучающим материалам",
-    //       price: "1000.00",
-    //       quantity: "1",
-    //       sum: "1000.00",
-    //     },
-    //   ],
-    //   payment_status: "success",
-    //   payment_status_description: "Успешная оплата",
-    // };
-
-    // let newBody = [];
-    // function objectToArray(obj) {
-    //   return Object.entries(obj).map(([key, value]) => {
-    //     if (typeof value === "array" && value !== null) {
-    //       return (newBody[key] = objectToArray(value));
-    //     } else {
-    //       return (newBody[key] = value);
-    //     }
-    //   });
-    // }
-    // objectToArray(body);
-
-    const secret_key = `${process.env.PAYMENT_SECRET_KEY}`;
-    // console.log("Headers: ", headers);
-    // console.log("Received data:", data);
+    console.log("Заголовки запроса: ", headers);
+    console.log("Знак Sign: ", sign);
+    //console.log("Тело запроса body: ", body);
 
     if (Object.keys(body).length == 0) {
       throw new Error("POST is empty");
     }
 
-    // if (!headers.sign) {
-    //   throw new Error("signature not found");
-    // }
-
-    console.log("Заголовки запроса: ", headers);
-    console.log("Знак Sign: ", sign);
-    console.log("Тело запроса body: ", body);
-    //console.log("Полный запрос request: ", req);
-
     // if (!Hmac.verify(req, secret_key, sign)) {
     //   throw new Error("signature incorrect");
     // }
+
+    if (!headers.sign) {
+      throw new Error("signature not found");
+    }
+
+    // обработка следующей даты оплаты
+    if (body._param_pretium === "pretium_i") {
+      nextMonthPayment = addMonth(paidDate, 1);
+    } else {
+      nextMonthPayment = addMonth(paidDate, 3);
+    }
+
+    customBody = {
+      ...body,
+      paidDate: new Date(body.date),
+      expire_payment_date: nextMonthPayment,
+      user_id: Number(body._param_user_id),
+      param_chat_id: Number(body._param_chat_id),
+      provider_payment_id: body.order_id,
+    };
+
+    console.log("Дата оплаты: ", paidDate);
+    console.log("Следующая дата оплаты: ", nextMonthPayment);
+    console.log("Дата через месяц:", showLocalDate(nextMonthPayment));
+
+    await updateUserPayment(customBody);
+    // await replyTelegramAfterPayment();
 
     await res.sendStatus(200);
     console.log("Успешно!");
@@ -143,55 +137,6 @@ const callbackPaymentWebhook = async (req, res) => {
     console.log(e);
     await res.sendStatus(400);
   }
-
-  // if (Object.keys(data).length !== 0) {
-  //   // обновляем запись в БД
-  //   // если запись в БД произошла успешно, отправляем статус 200
-
-  //   //data.paid_date
-
-  //   const currentDate = new Date(); // Текущая дата
-  //   const nextMonthDate = addMonth(currentDate);
-
-  //   console.log("Текущая дата:", currentDate);
-  //   console.log("Дата через месяц:", nextMonthDate.toLocaleDateString());
-
-  //   await updateUserPayment(data.user_id, data);
-
-  //   await fetch(
-  //     `https://api.telegram.org/bot${process.env.BOT_API_KEY}/sendMessage`,
-  //     {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         chat_id: data.chat_id,
-  //         text: "Поздравляем! Оплата прошла успешно. Можете начинать путешествие в античный мир!",
-  //         reply_markup: {
-  //           inline_keyboard: [
-  //             [
-  //               {
-  //                 text: "Начать",
-  //                 callback_data: "start", // Данные для обработки
-  //               },
-  //             ],
-  //           ],
-  //         },
-  //         resize_keyboard: true,
-  //       }),
-  //     }
-  //   )
-  //     .then((response) => response.json())
-  //     .then(async (data) => {
-  //       await res.sendStatus(200);
-  //       //console.log("Ответ Telegram:", data);
-  //     })
-  //     .catch((error) => console.error("Ошибка:", error));
-
-  // } else {
-  //   await res.sendStatus(400);
-  // }
 };
 
 module.exports = {

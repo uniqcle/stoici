@@ -1,5 +1,5 @@
 module.exports = {
-  addMonth: (date) => {
+  addMonth: (date, countMount) => {
     // Создаем копию исходной даты, чтобы не изменять оригинал
     const newDate = new Date(date);
 
@@ -7,15 +7,19 @@ module.exports = {
     const currentMonth = newDate.getMonth();
 
     // Устанавливаем следующий месяц
-    newDate.setMonth(currentMonth + 1);
+    newDate.setMonth(currentMonth + countMount);
 
     // Если при добавлении месяца дата "перескочила" через месяц (например, 31 января -> 3 марта),
     // то устанавливаем последний день предыдущего месяца
-    if (newDate.getMonth() !== (currentMonth + 1) % 12) {
+    if (newDate.getMonth() !== (currentMonth + countMount) % 12) {
       newDate.setDate(0); // Устанавливаем последний день предыдущего месяца
     }
 
     return newDate;
+  },
+
+  showLocalDate: (date) => {
+    return date.toLocaleDateString();
   },
 
   generateOrderNumber: (prefix = "D") => {
