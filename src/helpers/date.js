@@ -17,4 +17,17 @@ module.exports = {
 
     return newDate;
   },
+
+  generateOrderNumber: (prefix = "D") => {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const datePart = `${year}${month}${day}`;
+
+    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    const orderNumber = `${prefix}-${datePart}-${randomPart}`;
+    return orderNumber;
+  },
 };

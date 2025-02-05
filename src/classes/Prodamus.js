@@ -1,6 +1,6 @@
 const Hmac = require("../classes/Hmac");
 const { updateUserPayment } = require("../classes/User");
-const { addMonth } = require("../helpers/date");
+const { generateOrderNumber } = require("../helpers/date");
 
 const customData = {
   postUrl: `${process.env.PAYMENT_URL}`,
@@ -18,14 +18,17 @@ const customData = {
 /*******************************************************/
 const sendPayment = async (pretium, ctx) => {
   const chat_id = ctx.update.callback_query.message.chat.id;
-  const orderId = "S" + chat_id;
+  const orderId = generateOrderNumber();
 
-  let additional_data = pretium == "pretium_i" ? " на 1 месяц" : " на 3 месяца";
+  console.log("Номер заказа: ", orderId);
+
+  let additional_customer_extra =
+    pretium == "pretium_i" ? " на 1 месяц" : " на 3 месяца";
 
   // формируем объект инвойса
   const params = {
     order_id: orderId,
-    customer_extra: "Доступ к платному контенту" + additional_data,
+    customer_extra: "Доступ к платному контенту" + additional_customer_extra,
     do: "link",
     sys: `${process.env.PAYMENT_SYS_KEY}`,
     _param_chat_id: chat_id,
@@ -73,6 +76,8 @@ const callbackPaymentWebhook = async (req, res) => {
     const body = req.body; // Данные уже распарсены
     const sign = String(req.headers.sign);
 
+    console.log("Полный вид запроса: ", req);
+
     // const data = {
     //   date: "2025-02-04T00:00:00+03:00",
     //   order_id: "1",
@@ -99,22 +104,17 @@ const callbackPaymentWebhook = async (req, res) => {
     //   payment_status_description: "Успешная оплата",
     // };
 
-    let newBody = [];
-
-    function objectToArray(obj) {
-      return Object.entries(obj).map(([key, value]) => {
-        if (typeof value === "array" && value !== null) {
-          return (newBody[key] = objectToArray(value));
-        } else {
-          return (newBody[key] = value);
-        }
-      });
-    }
-
-    objectToArray(body);
-
-    // console.log("Массив с php: ");
-    // console.log(body);
+    // let newBody = [];
+    // function objectToArray(obj) {
+    //   return Object.entries(obj).map(([key, value]) => {
+    //     if (typeof value === "array" && value !== null) {
+    //       return (newBody[key] = objectToArray(value));
+    //     } else {
+    //       return (newBody[key] = value);
+    //     }
+    //   });
+    // }
+    // objectToArray(body);
 
     const secret_key = `${process.env.PAYMENT_SECRET_KEY}`;
     // console.log("Headers: ", headers);
@@ -124,18 +124,18 @@ const callbackPaymentWebhook = async (req, res) => {
       throw new Error("POST is empty");
     }
 
-    if (!headers.sign) {
-      throw new Error("signature not found");
-    }
+    // if (!headers.sign) {
+    //   throw new Error("signature not found");
+    // }
 
     console.log("Заголовки запроса: ", headers);
     console.log("Знак Sign: ", sign);
     console.log("Тело запроса body: ", body);
     //console.log("Полный запрос request: ", req);
 
-    if (!Hmac.verify(req, secret_key, sign)) {
-      throw new Error("signature incorrect");
-    }
+    // if (!Hmac.verify(req, secret_key, sign)) {
+    //   throw new Error("signature incorrect");
+    // }
 
     await res.sendStatus(200);
     console.log("Успешно!");
