@@ -85,7 +85,7 @@ const callbackPaymentWebhook = async (req, res) => {
     const secret_key = `${process.env.PAYMENT_SECRET_KEY}`;
     const headers = req.headers;
     const body = req.body;
-    const sign = req.headers.sign;
+    let sign = req.headers.sign;
     const paidDate = body.date;
     let customBody = {};
     let nextMonthPayment;
@@ -99,19 +99,15 @@ const callbackPaymentWebhook = async (req, res) => {
       throw new Error("POST is empty");
     }
 
-    // if (!Hmac.verify(req, secret_key, sign)) {
-    //   throw new Error("signature incorrect");
-    // }
+    if (!Hmac.verify(req, secret_key, sign)) {
+      throw new Error("signature incorrect");
+    }
 
     // sign = Hmac.create(body, secret_key);
     // console.log(sign);
 
-    //sign = "d57b4344cf3104e5221377a1e9b5ab67fbd687c8cb6dc45c0299ddfa369ed21f";
-
-    const passedTest = Hmac.verify(body, secret_key, sign) ? "true" : "false";
-    console.log("Подпись прошла: ", passedTest);
-
-
+    // const passedTest = Hmac.verify(body, secret_key, sign) ? "true" : "false";
+    // console.log("Подпись прошла: ", passedTest);
 
     if (!headers.sign) {
       throw new Error("signature not found");
