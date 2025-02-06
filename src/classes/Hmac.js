@@ -20,18 +20,12 @@ const Hmac = {
   _strValAndSort: function (data) {
     data = Hmac._sortObject(data);
 
-    
-
-	  for (var item in data) {
-      if (data.hasOwnProperty(item)) {
-        if (typeof data[item] === "object") {
+    for (var item in data)
+      if (data.hasOwnProperty(item))
+        if (typeof data[item] === "object")
           data[item] = Hmac._strValAndSort(data[item]);
-        } else {
-          console.log("Вываливается ошибка: ", data[item]);
-          data[item] = data[item].toString();
-        }
-      }
-    }
+        else data[item] = data[item].toString();
+
     return data;
   },
 
