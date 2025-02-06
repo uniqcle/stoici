@@ -90,27 +90,24 @@ const callbackPaymentWebhook = async (req, res) => {
     let customBody = {};
     let nextMonthPayment;
 
-    console.log("Полный вид запроса: ", req);
-    console.log("Заголовки запроса: ", headers);
-    console.log("Знак Sign: ", sign);
-    console.log("Тело запроса body: ", body);
+    // console.log("Полный вид запроса: ", req);
+    // console.log("Заголовки запроса: ", headers);
+    // console.log("Знак Sign: ", sign);
+    // console.log("Тело запроса body: ", body);
 
     if (Object.keys(body).length == 0) {
       throw new Error("POST is empty");
     }
 
-    if (!Hmac.verify(body, secret_key, sign)) {
-      throw new Error("signature incorrect");
-    }
-
-    // sign = Hmac.create(body, secret_key);
-    // console.log(sign);
-
-    // const passedTest = Hmac.verify(body, secret_key, sign) ? "true" : "false";
-    // console.log("Подпись прошла: ", passedTest);
-
     if (!headers.sign) {
       throw new Error("signature not found");
+    }
+
+    // для локального тестирования - раскоментировать!
+    sign = Hmac.create(body, secret_key);
+
+    if (!Hmac.verify(body, secret_key, sign)) {
+      throw new Error("signature incorrect");
     }
 
     // обработка следующей даты оплаты
