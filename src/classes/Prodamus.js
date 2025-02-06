@@ -99,7 +99,7 @@ const callbackPaymentWebhook = async (req, res) => {
       throw new Error("POST is empty");
     }
 
-    if (!Hmac.verify(req, secret_key, sign)) {
+    if (!Hmac.verify(body, secret_key, sign)) {
       throw new Error("signature incorrect");
     }
 
