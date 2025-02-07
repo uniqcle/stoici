@@ -1,109 +1,110 @@
 const db = require("../db/connect");
 const Users = db.user;
- const { addMonth } = require("../helpers/date");
+ 
+ 
 
- /*******************************************************/
- //Middleware. Check User and return
- /*******************************************************/
- const middlewareInitUser = async (ctx, next) => {
-   try {
-     // callback query
-     if (ctx.update.callback_query !== undefined) {
-       await initUserContextQuery(ctx);
-     }
+/*******************************************************/
+//Middleware. Check User and return
+/*******************************************************/
+const middlewareInitUser = async (ctx, next) => {
+  try {
+    // callback query
+    if (ctx.update.callback_query !== undefined) {
+      await initUserContextQuery(ctx);
+    }
 
-     //command
-     else if (ctx.update.message !== undefined) {
-       await initUserContextMessage(ctx);
-     } else {
-       await modifyUserContextExit(ctx);
-     }
+    //command
+    else if (ctx.update.message !== undefined) {
+      await initUserContextMessage(ctx);
+    } else {
+      await modifyUserContextExit(ctx);
+    }
 
-     await next();
-   } catch (e) {
-     console.log(e);
-   }
- };
+    await next();
+  } catch (e) {
+    console.log(e);
+  }
+};
 
- /*******************************************************/
- // Modify User context. Callback Query
- /*******************************************************/
- const initUserContextQuery = async (ctx) => {
-   try {
-     //console.log(ctx.update.callback_query);
+/*******************************************************/
+// Modify User context. Callback Query
+/*******************************************************/
+const initUserContextQuery = async (ctx) => {
+  try {
+    //console.log(ctx.update.callback_query);
 
-     const { id, is_bot, first_name, username, language_code, is_premium } =
-       ctx.update.callback_query.from;
+    const { id, is_bot, first_name, username, language_code, is_premium } =
+      ctx.update.callback_query.from;
 
-     if (ctx.update.callback_query.message.chat.id) {
-       const param_chat_id = ctx.update.callback_query.message.chat.id;
+    if (ctx.update.callback_query.message.chat.id) {
+      const param_chat_id = ctx.update.callback_query.message.chat.id;
 
-       const [user, created] = await Users.findOrCreate({
-         where: { user_id: id },
-         defaults: {
-           user_id: id,
-           is_bot,
-           first_name,
-           username,
-           language_code,
-           is_premium,
-           //custom
-           is_admin: null,
-           paid_date: null, // дата оплаты
-           sum: null, //
-           provider_payment_id: null, // номер платежки
-           param_chat_id,
-           param_pretium: null,
-           expire_payment_date: null, // до какого срок оплаты
-         },
-       });
+      const [user, created] = await Users.findOrCreate({
+        where: { user_id: id },
+        defaults: {
+              user_id: id,
+              is_bot,
+              first_name,
+              username,
+              language_code,
+              is_premium,
+              //custom
+              is_admin: null,
+              paid_date: null, // дата оплаты
+              sum: null, //
+              provider_payment_id: null, // номер платежки
+              param_chat_id: param_chat_id,
+              param_pretium: null,
+              expire_payment_date: null, // до какого срок оплаты
+            }
+      });
 
-       ctx.user = user;
-     }
+      ctx.user = user;
+    }
 
-     return;
-   } catch (e) {
-     console.log(e);
-   }
- };
+    return;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
- /*******************************************************/
- // Modify User context. Message
- /*******************************************************/
- const initUserContextMessage = async (ctx) => {
-   try {
-     const { id, is_bot, first_name, username, language_code, is_premium } =
-       ctx?.update?.message?.from;
+/*******************************************************/
+// Modify User context. Message
+/*******************************************************/
+const initUserContextMessage = async (ctx) => {
+  try {
+    const { id, is_bot, first_name, username, language_code, is_premium } =
+      ctx?.update?.message?.from;
 
-     const param_chat_id = ctx.update.message.chat.id;
+    const param_chat_id = ctx.update.message.chat.id;
 
-     //console.log(chat_id);
+    //console.log(chat_id);
 
-     const [user, created] = await Users.findOrCreate({
-       where: { user_id: id },
-       defaults: {
-         user_id: id,
-         is_bot,
-         first_name,
-         username,
-         language_code,
-         is_premium,
-         //custom
-         is_admin: null,
-         paid_date: null, // дата оплаты
-         sum: null, //
-         provider_payment_id: null, // номер платежки
-         param_chat_id,
-         param_pretium: null,
-         expire_payment_date: null, // до какого срок оплаты
-       },
-     });
+    const [user, created] = await Users.findOrCreate({
+      where: { user_id: id },
+      defaults: {
+            user_id: id,
+            is_bot,
+            first_name,
+            username,
+            language_code,
+            is_premium,
+            //custom
+            is_admin: null,
+            paid_date: null, // дата оплаты
+            sum: null, //
+            provider_payment_id: null, // номер платежки
+            param_chat_id: param_chat_id,
+            param_pretium: null,
+            expire_payment_date: null, // до какого срок оплаты
+          }
+    });
 
-     ctx.user = user;
-   } catch (e) {
-     console.log(e);
-   }
- };
+    ctx.user = user;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
  /*******************************************************/
  // Modify User context. Exit bot
