@@ -139,7 +139,10 @@ const initUserContextMessage = async (ctx) => {
    const currentDate = new Date();
 
    //Если текущая дата больше даты оплата, значит подписка истека
-   if (currentDate > ctx.user.expire_payment_date) {
+   if (
+     currentDate > ctx.user.expire_payment_date ||
+     ctx.user.expire_payment_date == null
+   ) {
      return false;
    } else {
      return true;

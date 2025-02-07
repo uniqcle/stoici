@@ -3,7 +3,6 @@ const { updateUserPayment } = require("../classes/User");
 const {
   addMonth,
   generateOrderNumber,
-  showLocalDate,
 } = require("../helpers/date");
 const { replyTelegramAfterPayment } = require("../classes/Reply");
 
@@ -26,8 +25,8 @@ const sendPayment = async (pretium, ctx) => {
   const chat_id = ctx.update.callback_query.message.chat.id;
   const order_num = generateOrderNumber();
 
-  console.log(ctx.user.dataValues.user_id);
-  console.log("Номер заказа: ", order_num);
+  // console.log(ctx.user.dataValues.user_id);
+  // console.log("Номер заказа: ", order_num);
 
   let additional_customer_extra =
     pretium == "pretium_i" ? " на 1 месяц" : " на 3 месяца";
@@ -66,8 +65,8 @@ const sendPayment = async (pretium, ctx) => {
     });
     const data = await response.text();
 
-    console.log(currentLink);
-    console.log("Текущая ссылка: ", data);
+    // console.log(currentLink);
+    // console.log("Текущая ссылка: ", data);
 
     return data;
   } catch (e) {
@@ -78,8 +77,6 @@ const sendPayment = async (pretium, ctx) => {
 /*******************************************************/
 // Отправка данных от Prodamus
 /*******************************************************/
-// обновляем запись в БД
-// если запись в БД произошла успешно, отправляем статус 200
 const callbackPaymentWebhook = async (req, res) => {
   try {
     const secret_key = `${process.env.PAYMENT_SECRET_KEY}`;
