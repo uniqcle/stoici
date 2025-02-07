@@ -87,7 +87,7 @@ const callbackPaymentWebhook = async (req, res) => {
     const body = req.body;
     let sign = req.headers.sign;
     const paidDate = body.date;
-    let customBody = {};
+    let customBody;
     let nextMonthPayment;
 
     // console.log("Полный вид запроса: ", req);
@@ -104,7 +104,7 @@ const callbackPaymentWebhook = async (req, res) => {
     }
 
     // для локального тестирования - раскоментировать!
-    sign = Hmac.create(body, secret_key);
+    //sign = Hmac.create(body, secret_key);
 
     if (!Hmac.verify(body, secret_key, sign)) {
       throw new Error("signature incorrect");
@@ -117,14 +117,13 @@ const callbackPaymentWebhook = async (req, res) => {
       nextMonthPayment = addMonth(paidDate, 3);
     }
 
-    customBody = {
-      ...body,
-      paidDate: new Date(body.date),
-      expire_payment_date: nextMonthPayment,
-      user_id: Number(body._param_user_id),
-      param_chat_id: Number(body._param_chat_id),
-      provider_payment_id: body.order_id,
-    };
+    customBody = JSON.parse(JSON.stringify(body));
+
+    customBody.paidDate = new Date(body.date);
+    customBody.expire_payment_date = nextMonthPayment;
+    customBody.user_id = Number(body._param_user_id);
+    customBody.param_chat_id = Number(body._param_chat_id);
+    customBody.provider_payment_id = body.order_id;
 
     // console.log("Дата оплаты: ", paidDate);
     // console.log("Следующая дата оплаты: ", nextMonthPayment);
