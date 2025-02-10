@@ -98,7 +98,7 @@ const callbackPaymentWebhook = async (req, res) => {
     }
 
     // для локального тестирования - раскоментировать!
-    sign = Hmac.create(body, secret_key);
+    //sign = Hmac.create(body, secret_key);
     //////////////////////////////////////////////////
 
     if (!Hmac.verify(body, secret_key, sign)) {
