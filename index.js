@@ -45,11 +45,11 @@ app.post("/webhook", webhookCallback(bot, "express"));
 bot.use(middlewareInitUser);
 bot.use(start);
 bot.use(fundamentum);
-bot.use(stoicus); // Кто такой стоик?
-bot.use(quo_vadis); // Куда стремится?
+bot.use(stoicus);        // Кто такой стоик?
+bot.use(quo_vadis);     // Куда стремится?
 bot.use(quid_motivum); // Чем руководствуется?
-bot.use(in_via); // С чем сталкивается на пути?
-bot.use(stoici); // Знаменитые стоики
+bot.use(in_via);      // С чем сталкивается на пути?
+bot.use(stoici);     // Знаменитые стоики
 bot.use(maximes);
 bot.use(maxima);
 bot.use(subscription);

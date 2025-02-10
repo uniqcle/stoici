@@ -1,8 +1,6 @@
 const { Composer } = require("grammy");
 const { replyWithPhoto } = require("../classes/Reply");
 const { startInlineKeyBoard } = require("../keyboards/start");
-// const { is_paid } = require("../classes/User");
-// const { subscribe } = require("../classes/Subscription");
 
 const start = new Composer();
 

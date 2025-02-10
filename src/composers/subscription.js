@@ -93,7 +93,7 @@ subscription.callbackQuery("pretium_i", async (ctx) => {
       });
     }
 
-    ctx.answerCallbackQuery();
+    await ctx.answerCallbackQuery();
   } catch (e) {
     console.log(e);
   }
@@ -124,7 +124,7 @@ subscription.callbackQuery("pretium_ii", async (ctx) => {
       });
     }
 
-    ctx.answerCallbackQuery();
+    await ctx.answerCallbackQuery();
   } catch (e) {
     console.log(e);
   }

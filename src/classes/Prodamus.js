@@ -1,9 +1,6 @@
 const Hmac = require("../classes/Hmac");
 const { updateUserPayment } = require("../classes/User");
-const {
-  addMonth,
-  generateOrderNumber,
-} = require("../helpers/date");
+const { addMonth, generateOrderNumber } = require("../helpers/date");
 const { replyTelegramAfterPayment } = require("../classes/Reply");
 
 const customData = {
@@ -102,6 +99,7 @@ const callbackPaymentWebhook = async (req, res) => {
 
     // для локального тестирования - раскоментировать!
     sign = Hmac.create(body, secret_key);
+    //////////////////////////////////////////////////
 
     if (!Hmac.verify(body, secret_key, sign)) {
       throw new Error("signature incorrect");
@@ -126,10 +124,14 @@ const callbackPaymentWebhook = async (req, res) => {
     // console.log("Следующая дата оплаты: ", nextMonthPayment);
     // console.log("Дата через месяц:", showLocalDate(nextMonthPayment));
 
-    await updateUserPayment(customBody);
+    const updatedUserPaymentReturn = await updateUserPayment(customBody);
+    if (!updatedUserPaymentReturn)
+      throw new Error("Updated User Payment fail!");
+
     await replyTelegramAfterPayment(customBody);
 
     await res.sendStatus(200);
+
     //console.log("Успешно!");
   } catch (e) {
     //console.log(e);

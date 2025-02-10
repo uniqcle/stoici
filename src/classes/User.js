@@ -193,22 +193,22 @@ const initUserContextMessage = async (ctx) => {
  /*******************************************************/
  //
  /*******************************************************/
- const updateDBUser = async (req) => {
-   try {
-     let result = await Users.findOne({
-       where: { user_id: userID },
-       attributes: ["id", "first_name", "username"],
-     });
+//  const updateDBUser = async (req) => {
+//    try {
+//      let result = await Users.findOne({
+//        where: { user_id: userID },
+//        attributes: ["id", "first_name", "username"],
+//      });
 
-     result.set({
-       first_name: "Ada",
-     });
+//      result.set({
+//        first_name: "Ada",
+//      });
 
-     await result.save();
-   } catch (e) {
-     console.log(e);
-   }
- };
+//      await result.save();
+//    } catch (e) {
+//      console.log(e);
+//    }
+//  };
 
  async function updateUserPayment(customBody) {
    try {
@@ -236,9 +236,12 @@ const initUserContextMessage = async (ctx) => {
      });
 
      if (affectedCount > 0) {
-       console.log(`Данные оплаты для пользователя ${customBody.user_id}`);
+       //console.log(`Данные оплаты для пользователя ${customBody.user_id}`);
+       //console.log(affectedCount);
+       return affectedCount;
      } else {
-       console.log(`Пользователь ${customBody.user_id} не найден`);
+       //console.log(`Пользователь ${customBody.user_id} не найден`);
+       throw new Error(`Пользователь ${customBody.user_id} не найден`);
      }
    } catch (error) {
      console.error("Ошибка обновления:", error);
